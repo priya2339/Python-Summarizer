@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Text Summarizer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+    :root {
+      --bg: #0f1a38;
+      --card-bg: #1b2a59;
+      --primary: #ff7f50;
+      --text-light: #f0f0f0;
+      --text-muted: #c0c0c0;
+      --shadow: rgba(0,0,0,0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 40px 30px;
+      max-width: 1000px;
+      width: 100%;
+      box-shadow: 0 10px 30px var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: slideUp 0.8s ease-in-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card h1 {
+      color: var(--text-light);
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.5;
+      font-size: 1rem;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 20px;
+      border-radius: 10px;
+      border: none;
+      resize: none;
+      outline: none;
+      font-size: 1rem;
+      background: #28345c;
+      color: var(--text-light);
+      transition: all 0.3s ease;
+    }
+
+    textarea:focus {
+      box-shadow: 0 0 8px var(--primary);
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 15px 25px;
+      font-size: 1rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 5px 15px var(--shadow);
+    }
+
+    .result {
+      background: #28345c;
+      color: var(--text-light);
+      padding: 20px;
+      border-radius: 10px;
+      min-height: 80px;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .result h3 {
+      color: var(--primary);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      .card {
+        padding: 30px 20px;
+      }
+      .card h1 {
+        font-size: 1.5rem;
+      }
+      .card p {
+        font-size: 0.95rem;
+      }
+      textarea {
+        font-size: 0.95rem;
+      }
+      button {
+        padding: 12px 20px;
+        font-size: 0.95rem;
+      }
+      .result {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Text Summarizer</h1>
+    <p>Need a text summarizer to paraphrase long articles? Use this AI tool to pull out key points quickly and easily.</p>
+
+    <textarea id="userInput" placeholder="Enter a topic or paragraph..."></textarea>
+    <div class="button-container">
+      <button id="summarizeBtn">✦ SUMMARIZE</button>
+    </div>
+    <div class="result" id="resultBox"></div>
+  </div>
+
+  <script>
+    document.getElementById("summarizeBtn").addEventListener("click", async () => {
+      const text = document.getElementById("userInput").value.trim();
+      const resultBox = document.getElementById("resultBox");
+
+      if (!text) {
+        resultBox.innerHTML = "<p style='color:#ff7f50;'>Please enter some text!</p>";
+        return;
+      }
+
+      resultBox.innerHTML = "<p><em>Summarizing...</em></p>";
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/summarize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+
+        const data = await response.json();
+
+        if (data.summary) {
+          resultBox.innerHTML = `<h3>Summary:</h3><p>${data.summary}</p>`;
+        } else if (data.error) {
+          resultBox.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+        }
+      } catch (error) {
+        resultBox.innerHTML = `<p style="color:red;">Error connecting to the server.</p>`;
+        console.error("Fetch Error:", error);
+      }
+    });
+  </script>
+</body>
+</html>
